@@ -2,7 +2,10 @@
 
 namespace app\controllers;
 
+use app\models\Category;
+use app\models\Post;
 use Yii;
+use yii\data\Pagination;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\Response;
@@ -61,44 +64,28 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
-    }
+        $data = Post::getAll(1);
+        $popular = $this->getPopularPosts();
+        $recent = $this->getRecentPosts();
+        $categories = Category::getAll();
 
-    /**
-     * Login action.
-     *
-     * @return Response|string
-     */
-    public function actionLogin()
-    {
-        var_dump($_POST);
-        die;
 
-        if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
-        }
 
-        $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            return $this->goBack();
-        }
-
-        $model->password = '';
-        return $this->render('login', [
-            'model' => $model,
+        return $this->render('index', [
+            'posts' => $data['posts'],
+            'pagination' => $data['pagination'],
+            'popular' => $popular,
+            'recent' => $recent,
+            'categories' => $categories,
         ]);
     }
 
-    /**
-     * Logout action.
-     *
-     * @return Response
-     */
-    public function actionLogout()
-    {
-        Yii::$app->user->logout();
+    public static function getPopularPosts(){
+        return Post::find()->orderBy('views')->limit(3)->all();
+    }
 
-        return $this->goHome();
+    public static function getRecentPosts(){
+        return Post::find()->orderBy('dateCreate')->limit(2)->all();
     }
 
     /**
@@ -128,4 +115,37 @@ class SiteController extends Controller
     {
         return $this->render('about');
     }
+
+    public function actionView($id)
+    {
+        $post = Post::findOne($id);
+        $popular = $this->getPopularPosts();
+        $recent = $this->getRecentPosts();
+        $categories = Category::getAll();
+        $post->viewsCounter();
+
+        return $this->render('post', [
+            'post' => $post,
+            'popular' => $popular,
+            'recent' => $recent,
+            'categories' => $categories,
+        ]);
+    }
+
+    public function actionCategory($id){
+
+        $data = Category::getPostsByCategory($id);
+        $popular = $this->getPopularPosts();
+        $recent = $this->getRecentPosts();
+        $categories = Category::getAll();
+
+        return $this->render('category', [
+            'posts' => $data['posts'],
+            'pagination' => $data['pagination'],
+            'popular' => $popular,
+            'recent' => $recent,
+            'categories' => $categories,
+        ]);
+    }
+
 }

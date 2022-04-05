@@ -3,14 +3,16 @@
 /* @var $this \yii\web\View */
 /* @var $content string */
 
-use app\assets\AppAsset;
+use app\assets\PublicAsset;
 use app\widgets\Alert;
 use yii\bootstrap4\Breadcrumbs;
 use yii\bootstrap4\Html;
 use yii\bootstrap4\Nav;
 use yii\bootstrap4\NavBar;
+use app\assets\AppAsset;
+use yii\helpers\Url;
 
-AppAsset::register($this);
+PublicAsset::register($this);
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
@@ -25,55 +27,49 @@ AppAsset::register($this);
 <body class="d-flex flex-column h-100">
 <?php $this->beginBody() ?>
 
-<header>
-    <?php
-    NavBar::begin([
-        'brandLabel' => Yii::$app->name,
-        'brandUrl' => Yii::$app->homeUrl,
-        'options' => [
-            'class' => 'navbar navbar-expand-md navbar-dark bg-dark fixed-top',
-        ],
-    ]);
-    echo Nav::widget([
-        'options' => ['class' => 'navbar-nav'],
-        'items' => [
-            ['label' => 'Home', 'url' => ['/site/index']],
-            ['label' => 'About', 'url' => ['/site/about']],
-            ['label' => 'Contact', 'url' => ['/site/contact']],
-            Yii::$app->user->isGuest ? (
-                ['label' => 'Login', 'url' => ['/site/login']]
-            ) : (
-                '<li>'
-                . Html::beginForm(['/site/logout'], 'post', ['class' => 'form-inline'])
-                . Html::submitButton(
-                    'Logout (' . Yii::$app->user->identity->username . ')',
-                    ['class' => 'btn btn-link logout']
-                )
-                . Html::endForm()
-                . '</li>'
-            )
-        ],
-    ]);
-    NavBar::end();
-    ?>
-</header>
 
-<main role="main" class="flex-shrink-0">
+<nav class="navbar main-menu navbar-default">
     <div class="container">
-        <?= Breadcrumbs::widget([
-            'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
-        ]) ?>
-        <?= Alert::widget() ?>
-        <?= $content ?>
-    </div>
-</main>
+        <div class="menu-content">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                        data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 
-<footer class="footer mt-auto py-3 text-muted">
-    <div class="container">
-        <p class="float-left">&copy; My Company <?= date('Y') ?></p>
-        <p class="float-right"><?= Yii::powered() ?></p>
+                <ul class="nav navbar-nav text-uppercase">
+                    <li><a data-toggle="dropdown" class="dropdown-toggle" href="/">Home</a>
+
+                    </li>
+                </ul>
+                <div class="i_con">
+                    <ul class="nav navbar-nav text-uppercase">
+                        <?php if (Yii::$app->user->isGuest): ?>
+                        <li><a href="<?= Url::toRoute(['auth/login'])?>">Login</a></li>
+                        <li><a href="<?= Url::toRoute(['auth/signup'])?>">Register</a></li>
+                        <?php else: ?>
+                        <?= Html::beginForm(['auth/logout'], 'post')
+                        . Html::submitButton(
+                                'Logout ( ' . Yii::$app->user->identity->login . ' )',
+                            ['class' => 'btn btn-link logout', 'style' => "padding-top:10px;"]
+                        )
+                        . Html::endForm()?>
+                        <?php endif;?>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
-</footer>
+</nav>
+
+<?= $content ?>
+
 
 <?php $this->endBody() ?>
 </body>
